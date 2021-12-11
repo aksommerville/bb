@@ -1,0 +1,31 @@
+Beepbot A, Song Format
+
+Songs are a headerless stream of commands, each identifiable by its first byte.
+
+0ttttttt () Delay. t=ticks
+10nnnnnn (vel) Note. n=note. (vel&0x80) fire-and-forget, (vel==0) note off.
+110kkkkk (v) Set property. v=value.
+           0x00 Reset: 0=clear, 1=default
+           0x01 Sustain (0,1)
+           0x02 Attack time low (0..255 +1 ms)
+           0x03 Attack time high (0..255 +1 ms)
+           0x04 Attack level low (0..255)
+           0x05 Attack level high (0..255)
+           0x06 Decay time low (0..255 +1 ms)
+           0x07 Decay time high (0..255 +1 ms)
+           0x08 Sustain level low (0..255)
+           0x09 Sustain level high (0..255)
+           0x0a Release time low (0..255 *4 ms)
+           0x0b Release time high (0..255 *4 ms)
+           0x0c Shape (0,1,2)=(silent,square,saw)
+           0x0d Note base (0..64), natural note zero corresponds to this MIDI note.
+           0x0e..0x1f reserved
+1110cccc () Set active channel.
+1111xxxx Reserved, illegal.
+
+Envelope:
+ - For velocity-insensitive envelopes, clear first, then set "low" only.
+ - If you reset to 1, or keep the default, you already have a velocity-sensitive sustainable envelope.
+ 
+TODO:
+ - Adjust tempo. Currently tempo is hard coded to 48 ticks/s.
