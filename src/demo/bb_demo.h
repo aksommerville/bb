@@ -12,7 +12,7 @@ struct bb_midi_driver;
 struct bba_synth;
 struct bbb_context;
 
-#define BB_DEFAULT_DEMO_NAME "bbb_song"
+#define BB_DEFAULT_DEMO_NAME "free_play"
 
 // New demo? Add it to this list.
 #define BB_FOR_EACH_DEMO \

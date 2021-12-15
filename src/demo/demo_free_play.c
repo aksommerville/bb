@@ -5,6 +5,9 @@
 #undef BB_DEMO_SYNTH
 #define BB_DEMO_SYNTH 'b'
 
+#undef BB_DEMO_BBB_CONFIG_PATH
+#define BB_DEMO_BBB_CONFIG_PATH 0
+
 static void demo_free_play_quit() {
 }
 
@@ -12,7 +15,7 @@ static int demo_free_play_init() {
 
   if (1) { // Force a given pid.
     struct bb_midi_event event={
-      .a=0x00,
+      .a=0x38,
       .chid=0,
       .opcode=BB_MIDI_OPCODE_PROGRAM,
     };
