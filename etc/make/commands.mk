@@ -1,6 +1,6 @@
 ifneq (,$(strip $(EXE_DEMO)))
-  demo:$(EXE_DEMO);$(EXE_DEMO)
-  demo-%:$(EXE_DEMO);$(EXE_DEMO) $*
+  demo:$(EXE_DEMO) $(DEMO_DATA_OUTPUTS);$(EXE_DEMO)
+  demo-%:$(EXE_DEMO) $(DEMO_DATA_OUTPUTS);$(EXE_DEMO) $*
 else
   demo demo-%:;echo "EXE_DEMO unset" ; exit 1
 endif

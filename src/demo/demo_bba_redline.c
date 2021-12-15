@@ -2,9 +2,14 @@
 #include "bba/bba.h"
 #include "share/bb_fs.h"
 
-#define SONG_PATH "src/demo/data/song-001-anitra.bba"
-//#define SONG_PATH "src/demo/data/song-002-rach2.bba"
-//#define SONG_PATH "src/demo/data/song-003-crow-no-mo.bba"
+/* On greyskull, I'm seeing scores typically >1500x, and occasionally >2000x.
+ * Looking good.
+ */
+
+#define SONG_PATH BB_MIDDIR"/demo/data/song/001-anitra.bba"
+//#define SONG_PATH BB_MIDDIR"/demo/data/song/002-rach2.bba"
+//#define SONG_PATH BB_MIDDIR"/demo/data/song/004-maple.bba"
+//#define SONG_PATH BB_MIDDIR"/demo/data/song/005-enigma.bba"
 
 // Rate is interesting; the other demo props should be constant.
 #undef BB_DEMO_RATE
@@ -21,6 +26,9 @@
 
 #undef BB_DEMO_REPORT_PERFORMANCE
 #define BB_DEMO_REPORT_PERFORMANCE 0
+
+#undef BB_DEMO_MIDI_IN
+#define BB_DEMO_MIDI_IN 0
 
 static void demo_bba_redline_quit() {
 }
@@ -68,7 +76,7 @@ static int demo_bba_redline_init() {
   } else {
     fprintf(stderr,"%s: No signal produced.\n",SONG_PATH);
   }
-
+  
   free(src);
   return 0;
 }

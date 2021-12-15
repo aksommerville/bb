@@ -8,14 +8,19 @@
 #include <stdint.h>
 
 struct bb_driver;
+struct bb_midi_driver;
 struct bba_synth;
+struct bbb_context;
 
-#define BB_DEFAULT_DEMO_NAME "bba_redline"
+#define BB_DEFAULT_DEMO_NAME "free_play"
 
 // New demo? Add it to this list.
 #define BB_FOR_EACH_DEMO \
   _(bba_song) \
-  _(bba_redline)
+  _(bba_redline) \
+  _(bbb_song) \
+  _(bbb_redline) \
+  _(free_play)
 
 // Invoke this at the bottom of the demo file.
 #define BB_DEMO(_name) \
@@ -29,18 +34,26 @@ struct bba_synth;
     .driver=BB_DEMO_DRIVER, \
     .synth=BB_DEMO_SYNTH, \
     .report_performance=BB_DEMO_REPORT_PERFORMANCE, \
+    .bbb_config_path=BB_DEMO_BBB_CONFIG_PATH, \
+    .bbb_cache_path=BB_DEMO_BBB_CACHE_PATH, \
+    .midi_in=BB_DEMO_MIDI_IN, \
   };
   
 // Redefine these to taste, between including this header and invoking BB_DEMO.
 #define BB_DEMO_RATE 44100 /* Main rate, Hertz. */
 #define BB_DEMO_CHANC 2 /* Main channel count (1,2) */
 #define BB_DEMO_DRIVER 1 /* Nonzero to initialize real output. */
-#define BB_DEMO_SYNTH 'a' /* Which synthesizer to initialize: 0,'a' */
+#define BB_DEMO_SYNTH 'a' /* Which synthesizer to initialize: 0,'a','b' */
 #define BB_DEMO_REPORT_PERFORMANCE 1 /* Report CPU usage at teardown. (distracting if you also do it) */
+#define BB_DEMO_BBB_CONFIG_PATH BB_MIDDIR"/demo/data/bbbar-001.bbbar"
+#define BB_DEMO_BBB_CACHE_PATH 0
+#define BB_DEMO_MIDI_IN 1
 
 // Globals, initialized for you according to the settings above.
 extern struct bb_driver *demo_driver;
 extern struct bba_synth demo_bba;
+extern struct bbb_context *demo_bbb;
+extern struct bb_midi_driver *demo_midi_driver;
 
 // Real time and CPU time in seconds.
 double bb_demo_now();
@@ -59,6 +72,9 @@ struct bb_demo {
   int driver;
   char synth;
   int report_performance;
+  const char *bbb_config_path;
+  const char *bbb_cache_path;
+  int midi_in;
 };
 
 #define _(name) extern const struct bb_demo bb_demo_metadata_##name;

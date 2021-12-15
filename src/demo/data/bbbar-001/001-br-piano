@@ -1,0 +1,26 @@
+# bright piano
+
+0a # type=cheapfx
+ff # master=31, velocity=7
+30 # noteid
+
+#shape:
+#      0 sine
+#      1 square
+#      2 saw
+#      3 triangle
+#      4 smooth square
+#      5 smooth saw
+#      6 white noise
+
+# ptch fmr  shp rng ; envs:pitch,range,level
+  0200 0100 04  10  c08888 c08888 c08888
+  0620 8004 04  80  c08888 c08888 c08888
+  0a40 8001 04  f0  c08888 c08888 c08888
+  1060 8010 04  c0  c08888 c08888 c08888
+  1880 8008 04  a0  c08888 c08888 c08888
+  20a0 0080 04  80  c08888 c08888 c08888
+  
+  0800 0101 00  80  10ffff2040ff00 00ff1010ff2080800000 c08888
+  
+0000

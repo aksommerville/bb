@@ -1,0 +1,8 @@
+# violin
+
+03 # type=shape1
+82 # master=16, velocity=2
+05 # shape=smooth saw
+e0 # short env, velocity, sustain
+58 # attack time and level
+78 # decay level and release time

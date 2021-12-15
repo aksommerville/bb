@@ -21,7 +21,7 @@ int bb_intbe_decode(int *dst,const void *src,int srcc,int size) {
     case 4: mask=0x80000000; *dst=(SRC[0]<<24)|(SRC[1]<<16)|(SRC[2]<<8)|SRC[3]; break;
   }
   if ((size<0)&&((*dst)&mask)) (*dst)|=mask;
-  return size;
+  return asize;
 }
 
 int bb_intle_decode(int *dst,const void *src,int srcc,int size) {
@@ -38,7 +38,7 @@ int bb_intle_decode(int *dst,const void *src,int srcc,int size) {
     case 4: mask=0x80000000; *dst=SRC[0]|(SRC[1]<<8)|(SRC[2]<<16)|(SRC[3]<<24); break;
   }
   if ((size<0)&&((*dst)&mask)) (*dst)|=mask;
-  return size;
+  return asize;
 }
 
 int bb_intle_encode(void *dst,int dsta,int src,int size) {
@@ -288,7 +288,7 @@ int bb_fixed_decode(double *dst,const void *src,int srcc,int size,int fractbitc)
   int32_t i;
   int err=bb_intbe_decode(&i,src,srcc,size);
   if (err<0) return -1;
-  *dst=(i/(1<<fractbitc));
+  *dst=(i/(double)(1<<fractbitc));
   return err;
 }
 

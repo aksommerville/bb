@@ -1,0 +1,19 @@
+# pizzicato strings
+
+08 # type=fmv
+ff # master=31, velocity=7
+20 # rate u4.4
+28 # range u4.4
+# level:
+  c0 # short env, velocity
+  38 # attack time and level
+  48 # decay level and release time
+# range:
+  50 # long env, velocity, initlevel
+  ff # levelscale
+  40 # timescale
+  80 # initlo
+  80 # inithi
+    20 c0 18 ff
+    40 40 30 20
+    00

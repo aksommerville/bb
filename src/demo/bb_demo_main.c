@@ -1,5 +1,7 @@
 #include "bb_demo.h"
 #include "bba/bba.h"
+#include "bbb/bbb.h"
+#include "share/bb_midi.h"
 #include "driver/bb_driver.h"
 #include <time.h>
 #include <signal.h>
@@ -10,6 +12,8 @@
  
 struct bb_driver *demo_driver=0;
 struct bba_synth demo_bba={0};
+struct bbb_context *demo_bbb=0;
+struct bb_midi_driver *demo_midi_driver=0;
 
 static const struct bb_demo *demo=0;
 static double demo_starttime_real,demo_starttime_cpu;
@@ -51,6 +55,8 @@ double bb_demo_cpu_now() {
 static void bb_demo_quit(int status) {
 
   bb_driver_del(demo_driver);
+  bb_midi_driver_del(demo_midi_driver);
+  bbb_context_del(demo_bbb);
   
   demo->quit();
   
@@ -89,10 +95,48 @@ static void bb_demo_cb_pcm(int16_t *v,int c,struct bb_driver *driver) {
     } else {
       for (;c-->0;v++) *v=bba_synth_update(&demo_bba);
     }
+    
+  } else if (demo_bbb) {
+    bbb_context_update(v,c,demo_bbb);
   
   //TODO other synthesizers
   } else {
     memset(v,0,sizeof(int16_t)*c);
+  }
+}
+
+/* MIDI callback.
+ */
+ 
+static void bb_demo_cb_midi(const void *src,int srcc,int devid,struct bb_midi_driver *driver) {
+  if ((srcc==2)&&!memcmp(src,"\xf0\xf7",2)) {
+    char name[256];
+    int namec=bb_midi_driver_get_device_name(name,sizeof(name),driver,devid);
+    if ((namec>0)&&(namec<=sizeof(name))) {
+      fprintf(stderr,"Connected MIDI device %d '%.*s'\n",devid,namec,name);
+    } else {
+      fprintf(stderr,"Connected MIDI device %d\n",devid);
+    }
+  } else if (!srcc) {
+    fprintf(stderr,"Disconnected MIDI device %d\n",devid);
+  } else {
+    //TODO We ought to have a separate MIDI event stream per devid. Doesn't feel important enough to bother with right now.
+    struct bb_midi_stream stream={0};
+    int srcp=0,err;
+    while (srcp<srcc) {
+      struct bb_midi_event event={0};
+      if ((err=bb_midi_stream_decode(&event,&stream,(char*)src+srcp,srcc-srcp))<1) {
+        return;
+      }
+      srcp+=err;
+      if (demo_bba.mainrate) {
+        //TODO convert MIDI events for BBA.
+      } else if (demo_bbb) {
+        if (bbb_context_event(demo_bbb,&event)<0) {
+          fprintf(stderr,"Error processing MIDI event.\n");
+        }
+      }
+    }
   }
 }
 
@@ -119,6 +163,7 @@ static int bb_demo_init() {
       fprintf(stderr,"Driver '%s' won't accept int16_t samples, and that's all we're doing.\n",demo_driver->type->name);
       return -1;
     }
+    fprintf(stderr,"Using PCM-Out driver '%s'.\n",demo_driver->type->name);
   }
   
   if ((demo_rate!=demo->rate)||(demo_chanc!=demo->chanc)) {
@@ -128,12 +173,24 @@ static int bb_demo_init() {
   switch (demo->synth) {
     case 0: break;
     case 'a': if (bba_synth_init(&demo_bba,demo_rate)<0) return -1; break;
+    case 'b': if (!(demo_bbb=bbb_context_new(demo_rate,demo_chanc,demo->bbb_config_path,demo->bbb_cache_path))) return -1; break;
     default: fprintf(stderr,"Demo '%s' request unknown synth '%c'.\n",demo->name,demo->synth); return -1;
+  }
+  
+  if (demo->midi_in) {
+    if (!(demo_midi_driver=bb_midi_driver_new(0,bb_demo_cb_midi,0))) {
+      fprintf(stderr,"Failed to instantiate default MIDI-In driver, proceeding anyway.\n");
+    } else {
+      fprintf(stderr,"Using MIDI-In driver '%s'.\n",demo_midi_driver->type->name);
+    }
   }
   
   fprintf(stderr,"Begin demo '%s'...\n",demo->name);
   
-  if (demo->init()<0) return -1;
+  if (demo_driver&&(bb_driver_lock(demo_driver)<0)) return -1;
+  int err=demo->init();
+  if (demo_driver) bb_driver_unlock(demo_driver);
+  if (err<0) return -1;
   
   demo_starttime_real=bb_demo_now();
   demo_starttime_cpu=bb_demo_cpu_now();
@@ -151,6 +208,7 @@ static int bb_demo_main() {
       if (bb_driver_update(demo_driver)<0) return -1;
       if (bb_driver_lock(demo_driver)<0) return -1;
     }
+    if (demo_midi_driver&&(bb_midi_driver_update(demo_midi_driver)<0)) return -1;
     int err=demo->update();
     if (demo_driver) bb_driver_unlock(demo_driver);
     if (err<=0) return err;

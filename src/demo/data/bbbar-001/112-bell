@@ -1,0 +1,9 @@
+# tinkle bell
+
+05 # type=fm1
+ff # master=31, velocity=7
+09 # rate
+1b # range u4.4
+e0 # short env, velocity, sustain
+18 # attack time and level
+26 # decay level and release time

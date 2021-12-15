@@ -10,7 +10,13 @@ A collection of synthesizers intended for use in video games.
 - -[x] Test on hardware.
 - -[ ] Song tooling, eg tweak instruments.
 -[ ] bbb: PCM only at the output end, synthesize notes individually.
+- -[x] Basic tuned instruments.
+- -[x] Opinionated drums.
+- -[x] Opinionated sound effects.
+- -[ ] Memory cache limit.
+- -[ ] Disk cache.
 -[ ] bbc: The whole enchilada.
+-[ ] Accept MIDI-In at demo, necessary for further testing.
 -[ ] Drivers.
 - -[x] Pulse.
 - -[ ] ALSA.

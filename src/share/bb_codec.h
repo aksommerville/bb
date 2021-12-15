@@ -27,6 +27,11 @@ static inline int bb_decoder_remaining(const struct bb_decoder *decoder) {
   return decoder->srcc-decoder->srcp;
 }
 
+static inline int bb_decode_u8(struct bb_decoder *decoder) {
+  if (decoder->srcp>=decoder->srcc) return -1;
+  return ((unsigned char*)(decoder->src))[decoder->srcp++];
+}
+
 /* Binary scalars.
  * (size) for int or fixed is in bytes, negative to read signed.
  * "vlq5" is VLQ with 5-byte sequences permitted, possibly dropping some high bits.

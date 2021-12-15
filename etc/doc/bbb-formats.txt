@@ -1,0 +1,186 @@
+Beepbot B Data Formats
+
+I've arranged for every data type to be self-terminating.
+This is mostly a convenience during development,
+so I don't have to update lengths when I change something. :P
+
+===== Archive =====
+
+Begins with a 4-byte signature: "\x00\xbb\xbaR"
+Followed by programs:
+  u8 pid
+  ... program
+Programs in an archive must be sorted by pid and must start with pid 0.
+The first out-of-order pid (nonzero for the first, or eg zero after) terminates the program list (without consuming that pid).
+Anything from there on is not yet defined.
+
+===== Program =====
+
+There can be up to 256 programs.
+I recommend following General MIDI for the first 128.
+Program zero is the univeral default (Acoustic Grand Piano).
+
+Encoded Programs are self-terminated.
+
+Note: Sustain is only available for constant waves.
+If FM, pitch bend, anything like that is involved, sustain is not available.
+
+Every format except dummy and split begin with 5-bit master level and 3-bit velocity size.
+Velocity size 0 means velocity is ignored, 7 means the full 7 bits, etc.
+
+First byte is format:
+  0x00 dummy: "Don't replace", not a real program.
+  0x01 silent: No output.
+  0x02 split: Subprograms depending on noteid
+  0x03 shape1: Predefined wave shapes (sustainable)
+  0x04 harm1: Harmonics wave (sustainable)
+  0x05 fm1: Single-period FM (sustainable)
+  0x06 shapev: Predefined shapes and pitch envelope.
+  0x07 harmv: Two harmonics waves with mix envelope.
+  0x08 fmv: Enharmonic FM with range envelope.
+  0x09..0xff: Reserved, illegal.
+I will avoid assigning pids (0x09,0x0a,0x0d,0x20..0x7e), so tools can distinguish text from binary with the first byte.
+  
+0x00 dummy
+  No data.
+  A dummy program does not replace anything already loaded under this pid.
+  
+0x01 silent
+  No data.
+  
+0x02 split
+  ... ranges:
+    u8 count or zero to terminate
+    u8 srcnoteid
+    u8 dstnoteid
+    ... Program
+  Ranges may overlap. The output is all overlapping programs, mixed equally.
+  
+0x03 shape1
+  u8 f8 master
+     07 velocity
+  u8 shape:
+      0 sine
+      1 square
+      2 saw
+      3 triangle
+      4 smooth square
+      5 smooth saw
+      6 white noise
+  ... env
+  
+0x04 harm1
+  u8 f8 master
+     07 velocity
+  u8 flags:
+    80 normalize to 1/n
+    70 reserved
+    0f coef count - 1
+  ... coeffients (u0.8)
+  ... env
+
+0x05 fm1
+  u8 f8 master
+     07 velocity
+  u8 rate
+  u4.4 range
+  ... env
+  
+0x06 shapev
+  u8 f8 master
+     07 velocity
+  u8 shape (see shape1)
+  ... level env
+  ... pitch env
+  
+0x07 harmv
+  u8 f8 master
+     07 velocity
+  u8 flags (for both sets):
+    80 normalize to 1/n
+    70 reserved
+    0f coef count - 1
+  ... coefs A (u0.8)
+  ... coefs B (u0.8)
+  ... level env
+  ... mix env
+  
+0x08 fmv
+  u8 f8 master
+     07 velocity
+  u4.4 rate
+  u4.4 range max
+  ... level env
+  ... range env
+  
+0x09 weedrums
+  u8 f8 master
+     07 velocity
+  u8 first noteid
+  ... drums
+    u8 class or zero to terminate:
+       1 tom
+       2 kick
+       3 snare
+       4 hat
+       5 cymbal
+       6 chirptom
+       7 timpani
+    u8 level
+    u8 tone: Depends on class but generally (low..high) or (loose..stiff)
+    u8 release: Scale depends on class
+    
+0x0a cheapfx
+  u8 f8 master
+     07 velocity
+  u8 first noteid
+  ... sounds
+    u16 max pitch or zero to terminate
+    u16 8000=1 7fff=fm rate absolute
+        8000=0 7fff=fm rate relative u7.8
+    u8 carrier shape
+    u4.4 max range
+    ... pitch env
+    ... range env
+    ... level env
+
+===== Envelope =====
+
+Two formats, which are both self-terminating.
+High bit of the first byte distinguishes them.
+
+With Short format, you do not supply exact levels or times.
+Instead, everything is on some arbitrary range "lower" or "higher" subjectively.
+All possible Short format values yield a sensible envelope (except the reserved bits).
+
+Short format: 3 bytes
+  80 00 00 format distinguisher, always set
+  40 00 00 velocity
+  20 00 00 sustain
+  1f 00 00 reserved
+  00 f0 00 attack time
+  00 0f 00 peak level
+  00 00 f0 sustain level (relative to peak level, always lower or equal)
+  00 00 0f release time
+  
+Long format: 3..72 bytes
+  u8 flags:
+    80 format distinguisher, always unset
+    40 velocity
+    20 sustain
+    10 initlevel
+    08 hireslevel: L is u0.16 if set, otherwise u0.8
+    04 hirestime: T is 0.16 if set, otherwise u0.8
+    02 signedlevel: L is s0.16/s0.8 instead of u0.16/u0.8
+    01 reserved
+  u8 level scale
+  u2.6 time scale, s
+  (u8) sustain index if (sustain)
+  (L) initlo if (initlevel)
+  (L) inithi if (initlevel&&velocity)
+  ... points:
+    T timelo or a natural zero to terminate
+    L levello
+    (T) timehi if (velocity)
+    (L) levelhi if (velocity)
+  We enforce an arbitrary 8-point limit.

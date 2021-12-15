@@ -1,0 +1,132 @@
+# 000-ac-piano
+
+#------------- weedrums
+
+09 # type=weedrums
+ff # master=31, velocity=7
+30 # first noteid
+
+# cls lvl tone rls ; cls=(1..6)=(tom,kick,snare,hat,cymbal,chirptom)
+  02  ff  00   00
+  02  ff  44   ff
+  02  ff  88   00
+  02  ff  cc   ff
+  04  ff  ff   00
+  04  ff  00   ff
+  04  ff  44   00
+  04  ff  88   ff
+  03  ff  cc   00
+  03  ff  ff   ff
+  03  ff  00   00
+  03  ff  44   ff
+  01  ff  88   00
+  01  ff  cc   ff
+  01  ff  ff   00
+  01  ff  00   ff
+  06  ff  44   00
+  06  ff  88   ff
+  06  ff  cc   00
+  06  ff  ff   ff
+  05  ff  00   00
+  05  ff  44   ff
+  07  ff  00   ff
+  07  ff  80   80
+  07  ff  ff   00
+  00
+
+#------------ fmv
+
+#08 # type=fmv
+#f8 # master=31, velocity=0
+#08 # rate u4.4
+#28 # range u4.4
+# level:
+#  80 # short env
+#  38 # attack time and level
+#  48 # decay level and release time
+# range:
+#  10 # long env, initlevel
+#  ff # levelscale
+#  40 # timescale
+#  80 # initlo
+#    18 ff
+#    30 20
+#    00
+
+#----------- harmv
+
+#07 # type=harmv
+#fa # master=31, velocity=2
+#05 # 6 coefficients, unnormalized
+#80 40 20 10 00 00
+#10 18 30 60 10 08
+# level:
+#  c0 # short env, velocity
+#  38 # attack time and level
+#  4c # decay level and release time
+# mix:
+#  00 # long env
+#  ff # levelscale
+#  30 # timescale
+#    10 ff
+#    10 40
+#    f0 00
+#    00
+
+#---------- shapev
+
+#06 # type=shapev
+#fa # master=31, velocity=2
+#00 # shape
+# level:
+#  c0 # short env, velocity
+#  38 # attack time and level
+#  4f # decay level and release time
+# pitch:
+#  12 # long env, initlevel, signedlevel
+#  04 # levelscale
+#  40 # timescale
+#  f0 # initlevel
+#    10 7f
+#    80 c0
+#    00
+
+#-------- fm1
+
+#05 # type=fm1
+#ff # master=31, velocity=7
+#09 # rate
+#1b # range u4.4
+#e0 # short env, velocity, sustain
+#18 # attack time and level
+#26 # decay level and release time
+
+#--------- harm1
+
+#04 # type=harm1
+#fa # master=31, velocity=2
+#07 # no normalize, 8 harmonics
+
+#ff 20 cf 10 ff 00 6f 00
+
+#e0 # short env, velocity, sustain
+#28 # attack time and level
+#24 # decay level and release time
+
+#-------- shape1
+
+#03 # type=shape1
+#fa # master=31, velocity=2
+#05 # shape
+#e0 # short env, velocity, sustain
+#26 # attack time and level
+#32 # decay level and release time
+
+# shape:
+#   0 sine
+#   1 square
+#   2 saw
+#   3 triangle
+#   4 smooth square
+#   5 smooth saw
+#   6 white noise
