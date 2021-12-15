@@ -1,6 +1,7 @@
 #include "bb_demo.h"
 #include "bba/bba.h"
 #include "share/bb_fs.h"
+#include <sys/resource.h>
 
 /* On greyskull, I'm seeing scores typically >1500x, and occasionally >2000x.
  * Looking good.
@@ -68,10 +69,12 @@ static int demo_bba_redline_init() {
     double time_cpu=bb_demo_cpu_now()-starttime_cpu;
     double score=time_real/produced;
     double consumption=time_cpu/time_real;
+    struct rusage rusage={0};
+    getrusage(RUSAGE_SELF,&rusage);
     fprintf(stderr,
-      "%s: rate=%d framec=%d len=%.03fs real=%.03fs cpu=%.03fs score=%.06f [%.0fx]\n",
+      "%s: rate=%d framec=%d len=%.03fs real=%.03fs cpu=%.03fs score=%.06f [%.0fx] memory=%ldMB\n",
       SONG_PATH,demo_bba.mainrate,framec,produced,
-      time_real,time_cpu,score,1.0/score
+      time_real,time_cpu,score,1.0/score,rusage.ru_maxrss>>10
     );
   } else {
     fprintf(stderr,"%s: No signal produced.\n",SONG_PATH);

@@ -84,8 +84,16 @@ struct bbb_store {
   struct bbb_store_entry {
     uint32_t sndid;
     struct bbb_pcm *pcm;
+    uint32_t access;
   } *entryv;
   int entryc,entrya;
+  uint32_t access_next;
+  
+  int printc;
+  int evictionc;
+  int pcmtotal; // Sum of sample counts of all pcm entries.
+  int limit_pcmc,target_pcmc;
+  int limit_pcmt,target_pcmt;
   
   // No general wave store, but we do keep some common ones ad-hoc.
   struct bbb_wave *wave_sine;
@@ -117,5 +125,15 @@ struct bbb_pcm *bbb_store_get_pcm(
 int bbb_store_search(const struct bbb_store *store,uint32_t sndid);
 int bbb_store_insert(struct bbb_store *store,int p,uint32_t sndid,struct bbb_pcm *pcm);
 int bbb_store_replace(struct bbb_store *store,int p,struct bbb_pcm *pcm);
+
+/* Context should call this when a printer finishes.
+ * If we are configured with a disk cache, this writes the PCM to it.
+ */
+int bbb_store_print_finished(struct bbb_store *store,struct bbb_pcm *pcm);
+
+/* Any program that isn't populated, make something up.
+ * (may leave programs unset too).
+ */
+int bbb_store_load_default(struct bbb_store *store);
 
 #endif

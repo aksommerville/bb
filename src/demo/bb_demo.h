@@ -12,7 +12,7 @@ struct bb_midi_driver;
 struct bba_synth;
 struct bbb_context;
 
-#define BB_DEFAULT_DEMO_NAME "free_play"
+#define BB_DEFAULT_DEMO_NAME "bbb_song"
 
 // New demo? Add it to this list.
 #define BB_FOR_EACH_DEMO \
@@ -20,7 +20,8 @@ struct bbb_context;
   _(bba_redline) \
   _(bbb_song) \
   _(bbb_redline) \
-  _(free_play)
+  _(free_play) \
+  _(bbb_pcm_limit)
 
 // Invoke this at the bottom of the demo file.
 #define BB_DEMO(_name) \
@@ -46,7 +47,7 @@ struct bbb_context;
 #define BB_DEMO_SYNTH 'a' /* Which synthesizer to initialize: 0,'a','b' */
 #define BB_DEMO_REPORT_PERFORMANCE 1 /* Report CPU usage at teardown. (distracting if you also do it) */
 #define BB_DEMO_BBB_CONFIG_PATH BB_MIDDIR"/demo/data/bbbar-001.bbbar"
-#define BB_DEMO_BBB_CACHE_PATH 0
+#define BB_DEMO_BBB_CACHE_PATH 0 /* Null by default, I expect most demos want a clean state. */
 #define BB_DEMO_MIDI_IN 1
 
 // Globals, initialized for you according to the settings above.

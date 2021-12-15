@@ -543,6 +543,7 @@ int bb_midi_file_reader_update(struct bb_midi_event *event,struct bb_midi_file_r
   // If we didn't select a delay, we're at EOF.
   if (delay==INT_MAX) {
     if (reader->repeat) {
+      fprintf(stderr,"--- song repeat ---\n");
       return bb_midi_file_a_capa(reader);
     }
     return -1;

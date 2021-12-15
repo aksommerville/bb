@@ -63,11 +63,9 @@ struct bbb_context *bbb_context_new(
     bbb_context_del(context);
     return 0;
   }
-  if (configpath&&configpath[0]) {
-    if (bbb_store_load(context->store)<0) {
-      bbb_context_del(context);
-      return 0;
-    }
+  if (bbb_store_load(context->store)<0) {
+    bbb_context_del(context);
+    return 0;
   }
   
   return context;
@@ -89,6 +87,11 @@ int bbb_context_get_rate(const struct bbb_context *context) {
 int bbb_context_get_chanc(const struct bbb_context *context) {
   if (!context) return 0;
   return context->chanc;
+}
+
+struct bbb_store *bbb_context_get_store(const struct bbb_context *context) {
+  if (!context) return 0;
+  return context->store;
 }
 
 /* Add printer.
@@ -311,6 +314,7 @@ static int bbb_context_update_printers(struct bbb_context *context,int framec) {
     struct bbb_printer *printer=context->printerv[i];
     int err=bbb_printer_update(printer,framec);
     if (err<=0) {
+      bbb_store_print_finished(context->store,printer->pcm);
       context->printerc--;
       memmove(context->printerv+i,context->printerv+i+1,sizeof(void*)*(context->printerc-i));
       bbb_printer_del(printer);

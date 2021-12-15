@@ -2,6 +2,7 @@
 #include "bbb/bbb.h"
 #include "share/bb_fs.h"
 #include "share/bb_midi.h"
+#include <sys/resource.h>
 
 /* I'm getting truly insane performance scores on greyskull: 4000x..8000x
  * This is only with square and saw programs. Likely to get a lot worse with better ones.
@@ -31,6 +32,9 @@
 
 #undef BB_DEMO_MIDI_IN
 #define BB_DEMO_MIDI_IN 0
+
+//#undef BB_DEMO_BBB_CACHE_PATH
+//#define BB_DEMO_BBB_CACHE_PATH BB_MIDDIR"/bbbcache"
 
 static void demo_bbb_redline_quit() {
 }
@@ -63,7 +67,6 @@ static int demo_bbb_redline_init() {
   }
   bb_midi_file_del(file);
   
-  double starttime_real=bb_demo_now();
   double starttime_cpu=bb_demo_cpu_now();
   int framec=0;
   int16_t buffer[BUFFER_SIZE*2]; // 2 instead of BB_DEMO_CHANC, because the driver might force 1 or 2
@@ -87,16 +90,31 @@ static int demo_bbb_redline_init() {
     /**/
   }
   
+  /* === How to read this report ===
+   * framec,len: How much audio we produced.
+   * cpu: Absolute CPU time elapsed.
+   * score,x: How much faster than real time? Anything under 10x should be seriously troubling. 100x is good.
+   * peak: Highest output sample (mind that we observe this after mixdown; we are not necessarily aware of clipping).
+   * memory: If available, how much memory did the process require.
+   * evictc: How many times did the store evict PCMs? Really ought to be zero, during a single song.
+   *   If evictc greater than zero, consider increasing bbb_store_set_memory_limit() or optimizing instruments (eg reduce velocity mask).
+   * pcmc: How many PCMs in cache at the end? If (evictc==0) this is also the total count of PCMs.
+   */
   if (framec>0) {
     double produced=(double)framec/(double)bbb_context_get_rate(demo_bbb);
-    double time_real=bb_demo_now()-starttime_real;
     double time_cpu=bb_demo_cpu_now()-starttime_cpu;
-    double score=time_real/produced;
-    double consumption=time_cpu/time_real;
+    double score=time_cpu/produced;
+    struct rusage rusage={0};
+    getrusage(RUSAGE_SELF,&rusage);
+    lo=-lo;
+    int peak=(lo>hi)?lo:hi;
+    int evictionc=bbb_store_get_eviction_count(bbb_context_get_store(demo_bbb));
+    int pcmc=bbb_store_get_pcm_count(bbb_context_get_store(demo_bbb));
     fprintf(stderr,
-      "%s: rate=%d framec=%d len=%.03fs real=%.03fs cpu=%.03fs score=%.06f [%.0fx] range=%d..%d\n",
+      "%s: rate=%d framec=%d len=%.03fs cpu=%.03fs score=%.06f [%.0fx] peak=%d memory=%ldMB evictc=%d pcmc=%d\n",
       SONG_PATH,bbb_context_get_rate(demo_bbb),framec,produced,
-      time_real,time_cpu,score,1.0/score,lo,hi
+      time_cpu,score,1.0/score,peak,rusage.ru_maxrss>>10,
+      evictionc,pcmc
     );
   } else {
     fprintf(stderr,"%s: No signal produced.\n",SONG_PATH);

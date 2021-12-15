@@ -6,6 +6,7 @@
 #include <time.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/resource.h>
 
 /* Globals.
  */
@@ -54,6 +55,13 @@ double bb_demo_cpu_now() {
  
 static void bb_demo_quit(int status) {
 
+  /* https://stackoverflow.com/questions/1558402/memory-usage-of-current-process-in-c
+   * I'm told this doesn't work in every kernel, but it does work for me (Debian 4.19.181-1 (2021-03-19))
+   * I get the same number here as from `ps -orss`.
+   */
+  struct rusage rusage={0};
+  getrusage(RUSAGE_SELF,&rusage);
+
   bb_driver_del(demo_driver);
   bb_midi_driver_del(demo_midi_driver);
   bbb_context_del(demo_bbb);
@@ -67,8 +75,8 @@ static void bb_demo_quit(int status) {
     double elapsed_cpu=bb_demo_cpu_now()-demo_starttime_cpu;
     if (demo_framec>0) {
       fprintf(stderr,
-        "%lld frames in %.03f s real. Effective rate %.03f Hz. CPU usage %.06f.\n",
-        (long long)demo_framec,elapsed_real,demo_framec/elapsed_real,elapsed_cpu/elapsed_real
+        "%lld frames in %.03f s real. Effective rate %.03f Hz. CPU usage %.06f. Memory %ld MB.\n",
+        (long long)demo_framec,elapsed_real,demo_framec/elapsed_real,elapsed_cpu/elapsed_real,rusage.ru_maxrss>>10
       );
     } else {
       fprintf(stderr,

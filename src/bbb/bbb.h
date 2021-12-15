@@ -19,6 +19,7 @@
 
 struct bbb_context;
 struct bbb_pcm;
+struct bbb_store;
 struct bb_midi_file;
 struct bb_midi_event;
 
@@ -92,6 +93,7 @@ struct bbb_pcm {
   int c;
   int loopa,loopz; // Sustainable if (a<z). (0<=a<z<=c)
   int inprogress; // Nonzero if (v) is being asynchronously printed.
+  uint32_t sndid; // For store's tracking.
   int16_t v[];
 };
 
@@ -263,5 +265,22 @@ void bbb_wave_generate_fm(int16_t *v,const int16_t *ref,int c,uint8_t rate,doubl
 void bbb_wave_generate_square(int16_t *v,int c);
 void bbb_wave_generate_saw(int16_t *v,int c,int16_t a,int16_t z);
 void bbb_wave_generate_triangle(int16_t *v,int c);
+
+/* In general, you don't interact directly with the store.
+ * But it can provide you some helpful troubleshooting info:
+ *   pcm_count: How many PCMs are cached right now?
+ *   print_count: How many PCMs have we printed since startup?
+ *   eviction_count: How many times did we evict PCMs since startup? (count of operations, not the count of evicted PCMs).
+ *   memory_estimate: Memory size in bytes of the PCM cache. Samples only; actual usage will be a little higher.
+ * Also, you may change the cache trigger limits. <=1 to leave unchanged and return the current value.
+ * "pcm_count_limit" is probably not useful.
+ */
+struct bbb_store *bbb_context_get_store(const struct bbb_context *context);
+int bbb_store_get_pcm_count(const struct bbb_store *store);
+int bbb_store_get_print_count(const struct bbb_store *store);
+int bbb_store_get_eviction_count(const struct bbb_store *store);
+int bbb_store_get_memory_estimate(const struct bbb_store *store);
+int bbb_store_set_pcm_count_limit(struct bbb_store *store,int pcmc);
+int bbb_store_set_memory_limit(struct bbb_store *store,int bytec);
 
 #endif

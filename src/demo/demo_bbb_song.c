@@ -17,6 +17,13 @@
 #undef BB_DEMO_SYNTH
 #define BB_DEMO_SYNTH 'b'
 
+//TODO Default instrument set.
+#undef BB_DEMO_BBB_CONFIG_PATH
+#define BB_DEMO_BBB_CONFIG_PATH 0
+
+#undef BB_DEMO_BBB_CACHE_PATH
+#define BB_DEMO_BBB_CACHE_PATH BB_MIDDIR"/bbbcache"
+
 static void demo_bbb_song_quit() {
 }
 
