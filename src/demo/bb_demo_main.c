@@ -21,6 +21,7 @@ static double demo_starttime_real,demo_starttime_cpu;
 static int64_t demo_framec=0;
 static int demo_rate,demo_chanc;
 static volatile int demo_sigc=0;
+static struct bb_midi_intake demo_intake={0};
 
 /* Signal handler.
  */
@@ -65,6 +66,7 @@ static void bb_demo_quit(int status) {
   bb_driver_del(demo_driver);
   bb_midi_driver_del(demo_midi_driver);
   bbb_context_del(demo_bbb);
+  bb_midi_intake_cleanup(&demo_intake);
   
   demo->quit();
   
@@ -117,7 +119,9 @@ static void bb_demo_cb_pcm(int16_t *v,int c,struct bb_driver *driver) {
  */
  
 static void bb_demo_cb_midi(const void *src,int srcc,int devid,struct bb_midi_driver *driver) {
+  
   if ((srcc==2)&&!memcmp(src,"\xf0\xf7",2)) {
+    struct bb_midi_stream *stream=bb_midi_intake_add_stream(&demo_intake,driver,devid);
     char name[256];
     int namec=bb_midi_driver_get_device_name(name,sizeof(name),driver,devid);
     if ((namec>0)&&(namec<=sizeof(name))) {
@@ -125,20 +129,25 @@ static void bb_demo_cb_midi(const void *src,int srcc,int devid,struct bb_midi_dr
     } else {
       fprintf(stderr,"Connected MIDI device %d\n",devid);
     }
+    
   } else if (!srcc) {
+    bb_midi_intake_remove_stream(&demo_intake,driver,devid);
     fprintf(stderr,"Disconnected MIDI device %d\n",devid);
+    
   } else {
-    //TODO We ought to have a separate MIDI event stream per devid. Doesn't feel important enough to bother with right now.
-    struct bb_midi_stream stream={0};
+    struct bb_midi_stream *stream=bb_midi_intake_get_stream(&demo_intake,driver,devid);
+    if (!stream) return;
     int srcp=0,err;
     while (srcp<srcc) {
       struct bb_midi_event event={0};
-      if ((err=bb_midi_stream_decode(&event,&stream,(char*)src+srcp,srcc-srcp))<1) {
+      if ((err=bb_midi_stream_decode(&event,stream,(char*)src+srcp,srcc-srcp))<1) {
         return;
       }
       srcp+=err;
+      
       if (demo_bba.mainrate) {
-        //TODO convert MIDI events for BBA.
+        bba_midi_event(&demo_bba,&event);
+        
       } else if (demo_bbb) {
         if (bbb_context_event(demo_bbb,&event)<0) {
           fprintf(stderr,"Error processing MIDI event.\n");
@@ -180,9 +189,20 @@ static int bb_demo_init() {
   
   switch (demo->synth) {
     case 0: break;
-    case 'a': if (bba_synth_init(&demo_bba,demo_rate)<0) return -1; break;
-    case 'b': if (!(demo_bbb=bbb_context_new(demo_rate,demo_chanc,demo->bbb_config_path,demo->bbb_cache_path))) return -1; break;
-    default: fprintf(stderr,"Demo '%s' request unknown synth '%c'.\n",demo->name,demo->synth); return -1;
+    case 'a': {
+        if (bba_synth_init(&demo_bba,demo_rate)<0) return -1;
+        fprintf(stderr,"Using BBA.\n");
+      } break;
+    case 'b': {
+        if (!(demo_bbb=bbb_context_new(demo_rate,demo_chanc,demo->bbb_config_path,demo->bbb_cache_path))) return -1;
+        if (demo->bbb_config_path) {
+          fprintf(stderr,"Using BBB with config path '%s'.\n",demo->bbb_config_path);
+        } else {
+          fprintf(stderr,"Using BBB with default config.\n");
+        }
+        if (demo->bbb_cache_path) fprintf(stderr,"Using BBB cache '%s'.\n",demo->bbb_cache_path);
+      } break;
+    default: fprintf(stderr,"Demo '%s' requested unknown synth '%c'.\n",demo->name,demo->synth); return -1;
   }
   
   if (demo->midi_in) {

@@ -6,9 +6,13 @@
 /* Global type registry.
  */
  
+extern const struct bb_driver_type bb_driver_type_alsa;
 extern const struct bb_driver_type bb_driver_type_pulse;
  
 static const struct bb_driver_type *bb_driver_typev[]={
+#if BB_USE_alsa
+  &bb_driver_type_alsa,
+#endif
 #if BB_USE_pulse
   &bb_driver_type_pulse,
 #endif

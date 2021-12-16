@@ -74,6 +74,23 @@ struct bb_midi_stream {
  */
 int bb_midi_stream_decode(struct bb_midi_event *event,struct bb_midi_stream *stream,const void *src,int srcc);
 
+/* Helper to track state for multiple streams, keyed by (driver,devid).
+ */
+struct bb_midi_intake {
+  struct bb_midi_intake_device {
+    const void *driver;
+    int devid;
+    struct bb_midi_stream stream;
+  } *devicev;
+  int devicec,devicea;
+};
+
+void bb_midi_intake_cleanup(struct bb_midi_intake *intake);
+
+struct bb_midi_stream *bb_midi_intake_get_stream(const struct bb_midi_intake *intake,const void *driver,int devid);
+struct bb_midi_stream *bb_midi_intake_add_stream(struct bb_midi_intake *intake,const void *driver,int devid);
+void bb_midi_intake_remove_stream(struct bb_midi_intake *intake,const void *driver,int devid);
+
 /* File.
  ********************************************************/
  

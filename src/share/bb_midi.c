@@ -581,3 +581,60 @@ int bb_midi_file_reader_is_complete(const struct bb_midi_file_reader *reader) {
   }
   return 1;
 }
+
+/* Intake.
+ */
+
+void bb_midi_intake_cleanup(struct bb_midi_intake *intake) {
+  if (intake->devicev) free(intake->devicev);
+  memset(intake,0,sizeof(struct bb_midi_intake));
+}
+
+static int bb_midi_intake_search(const struct bb_midi_intake *intake,const void *driver,int devid) {
+  int lo=0,hi=intake->devicec;
+  while (lo<hi) {
+    int ck=(lo+hi)>>1;
+    const struct bb_midi_intake_device *device=intake->devicev+ck;
+         if (driver<device->driver) hi=ck;
+    else if (driver>device->driver) lo=ck+1;
+    else if (devid<device->devid) hi=ck;
+    else if (devid>device->devid) lo=ck+1;
+    else return ck;
+  }
+  return -lo-1;
+}
+
+struct bb_midi_stream *bb_midi_intake_get_stream(const struct bb_midi_intake *intake,const void *driver,int devid) {
+  int p=bb_midi_intake_search(intake,driver,devid);
+  if (p<0) return 0;
+  return &(intake->devicev[p].stream);
+}
+
+struct bb_midi_stream *bb_midi_intake_add_stream(struct bb_midi_intake *intake,const void *driver,int devid) {
+  int p=bb_midi_intake_search(intake,driver,devid);
+  if (p>=0) return &intake->devicev[p].stream;
+  p=-p-1;
+  if (intake->devicec>=intake->devicea) {
+    int na=intake->devicea+4;
+    if (na>INT_MAX/sizeof(struct bb_midi_intake_device)) return 0;
+    void *nv=realloc(intake->devicev,sizeof(struct bb_midi_intake_device)*na);
+    if (!nv) return 0;
+    intake->devicev=nv;
+    intake->devicea=na;
+  }
+  struct bb_midi_intake_device *device=intake->devicev+p;
+  memmove(device+1,device,sizeof(struct bb_midi_intake_device)*(intake->devicec-p));
+  intake->devicec++;
+  memset(device,0,sizeof(struct bb_midi_intake_device));
+  device->driver=driver;
+  device->devid=devid;
+  return &device->stream;
+}
+
+void bb_midi_intake_remove_stream(struct bb_midi_intake *intake,const void *driver,int devid) {
+  int p=bb_midi_intake_search(intake,driver,devid);
+  if (p<0) return;
+  struct bb_midi_intake_device *device=intake->devicev+p;
+  intake->devicec--;
+  memmove(device,device+1,sizeof(struct bb_midi_intake_device)*(intake->devicec-p));
+}

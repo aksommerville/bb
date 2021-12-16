@@ -14,14 +14,16 @@ static void demo_free_play_quit() {
 static int demo_free_play_init() {
 
   if (1) { // Force a given pid.
-    struct bb_midi_event event={
-      .a=0x38,
-      .chid=0,
-      .opcode=BB_MIDI_OPCODE_PROGRAM,
-    };
-    int chid=0; for (;chid<16;chid++) {
-      event.chid=chid;
-      if (bbb_context_event(demo_bbb,&event)<0) return -1;
+    if (demo_bbb) {
+      struct bb_midi_event event={
+        .a=0x28,
+        .chid=0,
+        .opcode=BB_MIDI_OPCODE_PROGRAM,
+      };
+      int chid=0; for (;chid<16;chid++) {
+        event.chid=chid;
+        if (bbb_context_event(demo_bbb,&event)<0) return -1;
+      }
     }
   }
 

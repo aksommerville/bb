@@ -56,13 +56,13 @@ static const uint8_t bbb_default_programs[]={
       0x04,0xc0, 0x02,0xff,
       0x80,0x80, 0x80,0x40,
       0x00,
-      
+
   0x28, // Violin
     0x03, // type=shape1
-    0xfa, // master=31, velocity=2
+    0x82, // master=16, velocity=2
     0x05, // losaw
     0xe0,0xa8,0x68, // level
-    
+
   0x30, // String Ensemble 1
     0x04, // type=harm1
     0xfa, // master=31, velocity=2

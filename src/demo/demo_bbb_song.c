@@ -21,8 +21,8 @@
 #undef BB_DEMO_BBB_CONFIG_PATH
 #define BB_DEMO_BBB_CONFIG_PATH 0
 
-#undef BB_DEMO_BBB_CACHE_PATH
-#define BB_DEMO_BBB_CACHE_PATH BB_MIDDIR"/bbbcache"
+//#undef BB_DEMO_BBB_CACHE_PATH
+//#define BB_DEMO_BBB_CACHE_PATH BB_MIDDIR"/bbbcache"
 
 static void demo_bbb_song_quit() {
 }

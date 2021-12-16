@@ -3,9 +3,11 @@
  * "A" for "Arduino".
  * Some constraints and curiosities:
  *  - We never allocate memory.
- *  - No cleanup required, for anything.
+ *  - No cleanup required, for anything -- you must manage lifecycle of PCMs and songs.
  *  - Compile-time limit on simultaneous voices and PCMs.
  *  - Output is produced one sample at a time, mono only.
+ * If you're trying to maximize CPU performance, BBB tends to be a better choice (and much better quality).
+ * BBA's thing is memory, and it compromises a lot to achieve its memory goals.
  */
  
 #ifndef BBA_H
@@ -149,5 +151,11 @@ void bba_synth_note(struct bba_synth *synth,uint8_t chid,uint8_t noteid,uint8_t 
 void bba_synth_default_channels(struct bba_synth *synth);
 
 void bba_channel_set_property(struct bba_synth *synth,struct bba_channel *channel,uint8_t k,uint8_t v);
+
+/* MIDI integration is in a separate optional file.
+ * I expect most end products will not need this.
+ */
+struct bb_midi_event;
+void bba_midi_event(struct bba_synth *synth,const struct bb_midi_event *event);
 
 #endif

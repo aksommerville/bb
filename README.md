@@ -15,7 +15,7 @@ A collection of synthesizers intended for use in video games.
 - -[x] Convert from MIDI. cli:mid2bba
 - -[x] Test on hardware.
 - -[ ] Song tooling, eg tweak instruments.
-- -[ ] Helper for streaming MIDI events.
+- -[x] Helper for streaming MIDI events.
 -[x] bbb: PCM only at the output end, synthesize notes individually.
 - -[x] Basic tuned instruments.
 - -[x] Opinionated drums.
@@ -30,10 +30,10 @@ A collection of synthesizers intended for use in video games.
 -[x] Accept MIDI-In at demo, necessary for further testing.
 -[ ] Drivers.
 - -[x] Pulse.
-- -[ ] ALSA.
+- -[x] ALSA.
 - -[ ] MacOS.
 - -[ ] Windows.
-- -[ ] MIDI-In drivers.
+- -[ ] Mac MIDI-In.
 -[ ] Wrapper library.
 -[ ] CLI.
 - -[x] mid2bba
